@@ -42,6 +42,14 @@ extern "C" {
 	#define MQTT_CONF_PASSWORD_LENGTH 13 // Recommended by MQTT Specification (12 + '\0')
 #endif
 
+#ifndef MQTT_WILL_TOPIC_LENGTH
+	#define MQTT_WILL_TOPIC_LENGTH 31	// jcc
+#endif
+
+#ifndef MQTT_WILL_MSG_LENGTH
+	#define MQTT_WILL_MSG_LENGTH 31		// jcc
+#endif
+
 
 #define MQTT_MSG_CONNECT       1<<4
 #define MQTT_MSG_CONNACK       2<<4
@@ -165,7 +173,10 @@ typedef struct {
 	// Auth fields
 	char username[MQTT_CONF_USERNAME_LENGTH];
 	char password[MQTT_CONF_PASSWORD_LENGTH];
-	// Will topic
+	// Will
+	char will_topic[MQTT_WILL_TOPIC_LENGTH];
+	char will_message[MQTT_WILL_MSG_LENGTH];
+
 	uint8_t will_retain;
 	uint8_t will_qos;
 	uint8_t clean_session;
@@ -191,6 +202,12 @@ void mqtt_init(mqtt_broker_handle_t* broker, const char* clientid);
  * @note Only has effect before to call mqtt_connect
  */
 void mqtt_init_auth(mqtt_broker_handle_t* broker, const char* username, const char* password);
+
+/** jcc
+ *
+ */
+
+void mqtt_init_lwt(mqtt_broker_handle_t* broker, const char* topic, const char* message);
 
 /** Set the keep alive timer.
  * @param broker Data structure that contains the connection information with the broker.

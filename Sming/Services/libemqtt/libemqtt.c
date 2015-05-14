@@ -36,8 +36,11 @@
 #define MQTT_RETAIN_FLAG  1
 
 #define MQTT_CLEAN_SESSION  1<<1
+#define MQTT_WILL_QOS_VAL   1		// jcc qos 0,1, or 2
+#define MQTT_WILL_QOS_FLAG  1<<3
 #define MQTT_WILL_FLAG      1<<2
 #define MQTT_WILL_RETAIN    1<<5
+#define MQTT_WILL MQTT_WILL_QOS_FLAG | MQTT_WILL_FLAG | MQTT_WILL_RETAIN
 #define MQTT_USERNAME_FLAG  1<<7
 #define MQTT_PASSWORD_FLAG  1<<6
 
@@ -208,6 +211,13 @@ void mqtt_init_auth(mqtt_broker_handle_t* broker, const char* username, const ch
 		strncpy(broker->password, password, sizeof(broker->password)-1);
 }
 
+void mqtt_init_lwt(mqtt_broker_handle_t* broker, const char* topic, const char* message) {
+	if(topic && topic[0] != '\0')
+		strncpy(broker->will_topic, topic, sizeof(broker->will_topic)-1);
+	if(message && message[0] != '\0')
+		strncpy(broker->will_message, message, sizeof(broker->will_message)-1);
+}
+
 void mqtt_set_alive(mqtt_broker_handle_t* broker, uint16_t alive) {
 	broker->alive = alive;
 }
@@ -219,6 +229,9 @@ int mqtt_connect(mqtt_broker_handle_t* broker)
 	uint16_t clientidlen = strlen(broker->clientid);
 	uint16_t usernamelen = strlen(broker->username);
 	uint16_t passwordlen = strlen(broker->password);
+	uint16_t willtoplen  = strlen(broker->will_topic);
+	uint16_t willmsglen  = strlen(broker->will_message);
+
 	uint16_t payload_len = clientidlen + 2;
 
 	// Preparing the flags
@@ -232,6 +245,10 @@ int mqtt_connect(mqtt_broker_handle_t* broker)
 	}
 	if(broker->clean_session) {
 		flags |= MQTT_CLEAN_SESSION;
+	}
+	if(willtoplen) {
+		payload_len += willtoplen + willmsglen +  4;
+		flags |= MQTT_WILL ;
 	}
 
 	// Variable header
@@ -277,6 +294,20 @@ int mqtt_connect(mqtt_broker_handle_t* broker)
 	packet[offset++] = clientidlen&0xFF;
 	memcpy(packet+offset, broker->clientid, clientidlen);
 	offset += clientidlen;
+
+	// jcc
+	if(flags & MQTT_WILL_FLAG ) {
+		// Will Topic - UTF encoded
+		packet[offset++] = willtoplen>>8;
+		packet[offset++] = willtoplen&0xFF;
+		memcpy(packet+offset, broker->will_topic, willtoplen);
+		offset += willtoplen;
+		// Will Message - UTF encoded
+		packet[offset++] = willmsglen>>8;
+		packet[offset++] = willmsglen&0xFF;
+		memcpy(packet+offset, broker->will_message, willmsglen);
+		offset += willmsglen;
+	}
 
 	if(usernamelen) {
 		// Username - UTF encoded

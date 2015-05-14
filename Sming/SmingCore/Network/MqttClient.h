@@ -26,7 +26,7 @@ public:
 	virtual ~MqttClient();
 
 	bool connect(String clientName);
-	bool connect(String clientName, String username, String password);
+	bool connect(String clientName, String username, String password, String lwtopic, String lwmessage);
 
 	bool publish(String topic, String message, bool retained = false);
 	bool publishWithQoS(String topic, String message, int QoS, bool retained = false);

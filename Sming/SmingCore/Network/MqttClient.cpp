@@ -26,15 +26,17 @@ MqttClient::~MqttClient()
 
 bool MqttClient::connect(String clientName)
 {
-	return MqttClient::connect(clientName, "", "");
+	return MqttClient::connect(clientName, "", "","","");
 }
 
-bool MqttClient::connect(String clientName, String username, String password)
+bool MqttClient::connect(String clientName, String username, String password, String lwtopic, String lwmessage)
 {
 	debugf("MQTT start connection");
 	mqtt_init(&broker, clientName.c_str());
 	if (clientName.length() > 0)
 		mqtt_init_auth(&broker, username.c_str(), password.c_str());
+	if (lwtopic.length() > 0)
+		mqtt_init_lwt(&broker, lwtopic.c_str(), lwmessage.c_str());
 
 	int keepalive = 20; // Seconds
 
