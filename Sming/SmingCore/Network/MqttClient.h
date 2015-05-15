@@ -38,10 +38,6 @@ public:
 
 	bool subscribe(String topic);
 	bool unsubscribe(String topic);
-<<<<<<< HEAD
-	inline bool isProcessing()  { return TcpClient::isProcessing() ; }
-=======
->>>>>>> 246905329bbbc4e8c9272095d4bfbdc97a9081bc
 
 protected:
 	virtual err_t onReceive(pbuf *buf);
