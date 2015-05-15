@@ -33,6 +33,8 @@ public:
 
 	bool subscribe(String topic);
 	bool unsubscribe(String topic);
+	inline bool isProcessing()  { return TcpClient::isProcessing() ; }
+
 protected:
 	virtual err_t onReceive(pbuf *buf);
 	virtual void onReadyToSendData(TcpConnectionEvent sourceEvent);
