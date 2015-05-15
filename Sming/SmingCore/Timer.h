@@ -9,6 +9,7 @@
 #define _SMING_CORE_Timer_H_
 
 #include "../SmingCore/Interrupts.h"
+#include "../SmingCore/Delegate.h"
 #include "../Wiring/WiringFrameworkDependencies.h"
 
 class Timer
@@ -17,31 +18,40 @@ public:
 	Timer();
 	~Timer();
 
-	// Init in Milliseconds. Method return "this" reference
-	Timer& IRAM_ATTR initializeMs(uint32_t milliseconds=1000000, InterruptCallback interrupt = NULL);
-	// Init in Microseconds. Method return "this" reference
-	Timer& IRAM_ATTR initializeUs(uint32_t microseconds=1000000, InterruptCallback interrupt = NULL);
-	void IRAM_ATTR start(bool repeating=true);
-	void __inline IRAM_ATTR startOnce() { start(false); }
+	// It return value for Method Chaining (return "this" reference)
+	// http://en.wikipedia.org/wiki/Method_chaining
+
+	Timer& IRAM_ATTR initializeMs(uint32_t milliseconds = 1000000, InterruptCallback callback = NULL); // Init in Milliseconds.
+	Timer& IRAM_ATTR initializeUs(uint32_t microseconds = 1000000, InterruptCallback callback = NULL); // Init in Microseconds.
+
+	Timer& IRAM_ATTR initializeMs(uint32_t milliseconds, Delegate<void()> delegateFunction = NULL); // Init in Milliseconds.
+	Timer& IRAM_ATTR initializeUs(uint32_t milliseconds, Delegate<void()> delegateFunction = NULL); // Init in Microseconds.
+
+	void IRAM_ATTR start(bool repeating = true);
+	void __forceinline IRAM_ATTR startOnce() { start(false); }
 	void IRAM_ATTR stop();
-	void restart();
+	void IRAM_ATTR restart();
 	bool isStarted();
+
 	uint32_t getIntervalUs();
 	uint32_t getIntervalMs();
-	//void resume();
 
-    //void attachInterrupt(InterruptCallback interrupt);
-    //void detachInterrupt();
-    //void setPeriod(long microseconds);
+    void IRAM_ATTR setIntervalUs(uint32_t microseconds = 1000000);
+    void IRAM_ATTR setIntervalMs(uint32_t milliseconds = 1000000);
+
+    void IRAM_ATTR setCallback(InterruptCallback interrupt = NULL);
+    void IRAM_ATTR setCallback(Delegate<void()> delegateFunction);
 
 protected:
     static void IRAM_ATTR processing(void *arg);
 
+
 private:
     os_timer_t timer;
-    uint32_t interval;
-    InterruptCallback callback;
-    bool started;
+    uint32_t interval = 0;
+    InterruptCallback callback = nullptr;
+    Delegate<void()> delegate_func = nullptr;
+    bool started = false;
 };
 
 #endif /* _SMING_CORE_Timer_H_ */

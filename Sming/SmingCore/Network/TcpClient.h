@@ -9,14 +9,19 @@
 #define _SMING_CORE_TCPCLIENT_H_
 
 #include "TcpConnection.h"
+#include "../Delegate.h"
 
 class TcpClient;
 class MemoryDataStream;
 class IPAddress;
 
-typedef void (*TcpClientEventCallback)(TcpClient& client, TcpConnectionEvent sourceEvent);
-typedef void (*TcpClientBoolCallback)(TcpClient& client, bool successful);
-typedef bool (*TcpClientDataCallback)(TcpClient& client, char *data, int size);
+//typedef void (*TcpClientEventCallback)(TcpClient& client, TcpConnectionEvent sourceEvent);
+//typedef void (*TcpClientBoolCallback)(TcpClient& client, bool successful);
+//typedef bool (*TcpClientDataCallback)(TcpClient& client, char *data, int size);
+
+typedef Delegate<void(TcpClient& client, TcpConnectionEvent sourceEvent)> TcpClientEventCallback;
+typedef Delegate<void(TcpClient& client, bool successful)> TcpClientBoolCallback;
+typedef Delegate<bool(TcpClient& client, char *data, int size)> TcpClientDataCallback;
 
 enum TcpClientState
 {
@@ -44,8 +49,8 @@ public:
 
 	bool send(const char* data, uint8_t len, bool forceCloseAfterSent = false);
 	bool sendString(String data, bool forceCloseAfterSent = false);
-	inline bool isProcessing()  { return state == eTCS_Connected || state == eTCS_Connecting; }
-	inline TcpClientState getState() { return state; }
+	__forceinline bool isProcessing()  { return state == eTCS_Connected || state == eTCS_Connecting; }
+	__forceinline TcpClientState getState() { return state; }
 
 protected:
 	virtual err_t onConnected(err_t err);
